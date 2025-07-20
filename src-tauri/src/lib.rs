@@ -6,10 +6,13 @@ mod services;
 
 use database::Database;
 use models::{
-    Character, CreateCharacterRequest, CreateHabitEntryRequest, CreateHabitRequest,
-    CreateTaskRequest, Habit, HabitEntry, Task, UpdateCharacterRequest, UpdateHabitRequest,
+    Achievement, AchievementStatus, Character, CreateCharacterRequest, CreateHabitEntryRequest,
+    CreateHabitRequest, CreateQuestRequest, CreateTaskRequest, Habit, HabitEntry, Quest, Task,
+    UpdateCharacterRequest, UpdateHabitRequest,
 };
-use services::{character_service, habit_service, task_service};
+use services::{
+    achievement_service, character_service, habit_service, quest_service, task_service,
+};
 use std::sync::{Arc, Mutex};
 use tauri::State;
 
@@ -288,6 +291,163 @@ async fn check_api_status(port: u16) -> Result<bool, String> {
     }
 }
 
+// ==== QUEST COMMANDS ====
+
+/// Tauri command do generowania questów tygodniowych
+#[tauri::command]
+fn generate_weekly_quests(state: State<AppState>) -> Result<Vec<Quest>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::generate_weekly_quests(conn)
+        .map_err(|e| format!("Failed to generate weekly quests: {}", e))
+}
+
+/// Tauri command do pobierania questów dla tygodnia
+#[tauri::command]
+fn get_quests_for_week(week: Option<String>, state: State<AppState>) -> Result<Vec<Quest>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::get_quests_for_week(conn, week)
+        .map_err(|e| format!("Failed to get quests for week: {}", e))
+}
+
+/// Tauri command do pobierania aktywnych questów
+#[tauri::command]
+fn get_active_quests(state: State<AppState>) -> Result<Vec<Quest>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::get_active_quests(conn)
+        .map_err(|e| format!("Failed to get active quests: {}", e))
+}
+
+/// Tauri command do aktualizacji postępu questów
+#[tauri::command]
+fn update_quest_progress(state: State<AppState>) -> Result<Vec<Quest>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::update_all_quest_progress(conn)
+        .map_err(|e| format!("Failed to update quest progress: {}", e))
+}
+
+/// Tauri command do ukończenia questu
+#[tauri::command]
+fn complete_quest(quest_id: i32, state: State<AppState>) -> Result<Quest, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::complete_quest(conn, quest_id)
+        .map_err(|e| format!("Failed to complete quest: {}", e))
+}
+
+/// Tauri command do wygaszenia przeterminowanych questów
+#[tauri::command]
+fn expire_overdue_quests(state: State<AppState>) -> Result<i32, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    quest_service::expire_overdue_quests(conn)
+        .map_err(|e| format!("Failed to expire overdue quests: {}", e))
+}
+
+// ==== ACHIEVEMENT COMMANDS ====
+
+/// Tauri command do pobierania wszystkich odznak
+#[tauri::command]
+fn get_all_achievements(state: State<AppState>) -> Result<Vec<Achievement>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    achievement_service::get_all_achievements(conn)
+        .map_err(|e| format!("Failed to get achievements: {}", e))
+}
+
+/// Tauri command do pobierania odznak według statusu
+#[tauri::command]
+fn get_achievements_by_status(
+    status: String,
+    state: State<AppState>,
+) -> Result<Vec<Achievement>, String> {
+    let achievement_status = match status.as_str() {
+        "Locked" => AchievementStatus::Locked,
+        "Available" => AchievementStatus::Available,
+        "Earned" => AchievementStatus::Earned,
+        _ => return Err("Invalid achievement status".to_string()),
+    };
+
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    achievement_service::get_achievements_by_status(conn, achievement_status)
+        .map_err(|e| format!("Failed to get achievements by status: {}", e))
+}
+
+/// Tauri command do sprawdzenia i aktualizacji odznak
+#[tauri::command]
+fn check_and_update_achievements(state: State<AppState>) -> Result<Vec<Achievement>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    achievement_service::check_and_update_achievements(conn)
+        .map_err(|e| format!("Failed to check and update achievements: {}", e))
+}
+
+/// Tauri command do zdobycia odznaki
+#[tauri::command]
+fn earn_achievement(achievement_id: i32, state: State<AppState>) -> Result<Achievement, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    achievement_service::earn_achievement(conn, achievement_id)
+        .map_err(|e| format!("Failed to earn achievement: {}", e))
+}
+
+/// Tauri command do pobierania statystyk odznak
+#[tauri::command]
+fn get_achievement_stats(state: State<AppState>) -> Result<(i32, i32, i32), String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    achievement_service::get_achievement_stats(conn)
+        .map_err(|e| format!("Failed to get achievement stats: {}", e))
+}
+
 /// Stan aplikacji zawierający połączenie z bazą danych
 struct AppState {
     db: Mutex<Database>,
@@ -329,7 +489,18 @@ pub fn run() {
             add_experience,
             add_attribute_points,
             start_api_server,
-            check_api_status
+            check_api_status,
+            generate_weekly_quests,
+            get_quests_for_week,
+            get_active_quests,
+            update_quest_progress,
+            complete_quest,
+            expire_overdue_quests,
+            get_all_achievements,
+            get_achievements_by_status,
+            check_and_update_achievements,
+            earn_achievement,
+            get_achievement_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

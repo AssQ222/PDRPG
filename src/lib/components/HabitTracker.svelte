@@ -8,6 +8,7 @@
         isLoading,
     } from "../stores/habitStore";
     import { characterActions } from "../stores/characterStore";
+    import { updateQuestProgress } from "../stores/questStore";
     import type { HabitWithEntry } from "../types/habit";
 
     // Reactive state
@@ -38,6 +39,10 @@
         // Jeśli nawyk został oznaczony jako wykonany, odśwież character store
         if (!wasCompleted && newStatus) {
             await characterActions.getCharacter();
+
+            // Aktualizuj postęp questów po ukończeniu nawyku
+            await updateQuestProgress();
+
             console.log(
                 "🎮 Character refreshed after habit completion:",
                 habitWithEntry.habit.title,
@@ -72,6 +77,10 @@
         // Jeśli nawyk przeszedł z nieukończonego na ukończony, odśwież character
         if (!wasCompleted && isNowCompleted) {
             await characterActions.getCharacter();
+
+            // Aktualizuj postęp questów po ukończeniu nawyku
+            await updateQuestProgress();
+
             console.log(
                 "🎮 Character refreshed after habit completion:",
                 habitWithEntry.habit.title,

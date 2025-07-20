@@ -384,3 +384,233 @@ pub struct CreateCharacterRequest {
 pub struct UpdateCharacterRequest {
     pub character_class: Option<CharacterClass>,
 }
+
+/// Status questu tygodniowego
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum QuestStatus {
+    /// Quest aktywny - można go ukończyć
+    Active,
+    /// Quest ukończony
+    Completed,
+    /// Quest wygasł (minął deadline)
+    Expired,
+}
+
+/// Typ questu określający jego kategorię
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum QuestType {
+    /// Quest związany z zadaniami (np. "Ukończ 5 zadań z kategorii 'nauka'")
+    Task,
+    /// Quest związany z nawykami (np. "Utrzymaj nawyk przez 7 dni z rzędu")
+    Habit,
+    /// Quest związany z postacią (np. "Zdobądź 100 EXP")
+    Character,
+}
+
+/// Model reprezentujący quest tygodniowy
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Quest {
+    /// Unikalny identyfikator questu
+    pub id: i32,
+    /// Tytuł questu
+    pub title: String,
+    /// Szczegółowy opis questu
+    pub description: String,
+    /// Typ questu
+    pub quest_type: QuestType,
+    /// Wartość docelowa (np. liczba zadań do ukończenia)
+    pub target_value: i32,
+    /// Aktualny postęp (np. ukończone zadania)
+    pub current_progress: i32,
+    /// Kategoria/tag dla questów zadaniowych (opcjonalna)
+    pub category: Option<String>,
+    /// ID nawyku dla questów nawykowych (opcjonalne)
+    pub habit_id: Option<i32>,
+    /// Status questu
+    pub status: QuestStatus,
+    /// Nagroda EXP za ukończenie
+    pub reward_exp: i64,
+    /// Deadline questu (Unix timestamp, opcjonalny)
+    pub deadline: Option<i64>,
+    /// Tydzień w którym quest został utworzony (YYYY-WW format)
+    pub week: String,
+    /// Timestamp utworzenia questu
+    pub created_at: i64,
+    /// Timestamp ostatniej aktualizacji
+    pub updated_at: i64,
+}
+
+impl Quest {
+    /// Tworzy nowy quest
+    pub fn new(
+        title: String,
+        description: String,
+        quest_type: QuestType,
+        target_value: i32,
+        category: Option<String>,
+        habit_id: Option<i32>,
+        reward_exp: i64,
+        deadline: Option<i64>,
+        week: String,
+    ) -> Self {
+        let now = chrono::Utc::now().timestamp();
+
+        Quest {
+            id: 0, // Będzie ustawione przez bazę danych
+            title,
+            description,
+            quest_type,
+            target_value,
+            current_progress: 0,
+            category,
+            habit_id,
+            status: QuestStatus::Active,
+            reward_exp,
+            deadline,
+            week,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    /// Sprawdza czy quest jest ukończony
+    pub fn is_completed(&self) -> bool {
+        self.current_progress >= self.target_value
+    }
+
+    /// Aktualizuje postęp questu
+    pub fn update_progress(&mut self, progress: i32) {
+        self.current_progress = progress;
+        if self.is_completed() && matches!(self.status, QuestStatus::Active) {
+            self.status = QuestStatus::Completed;
+        }
+        self.updated_at = chrono::Utc::now().timestamp();
+    }
+
+    /// Oznacza quest jako wygasły
+    pub fn mark_expired(&mut self) {
+        self.status = QuestStatus::Expired;
+        self.updated_at = chrono::Utc::now().timestamp();
+    }
+}
+
+/// Typ odznaki/achievementu
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AchievementType {
+    /// Odznaka za streak nawyków
+    HabitStreak,
+    /// Odznaka za liczbę ukończonych zadań
+    TaskCount,
+    /// Odznaka za poziom postaci
+    CharacterLevel,
+    /// Odznaka za ukończone questy
+    QuestCount,
+}
+
+/// Status odznaki
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AchievementStatus {
+    /// Odznaka zablokowana (wymagania niespełnione)
+    Locked,
+    /// Odznaka dostępna (wymagania spełnione, ale nie odebrana)
+    Available,
+    /// Odznaka zdobyta (odebrana przez użytkownika)
+    Earned,
+}
+
+/// Model reprezentujący odznakę/achievement
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Achievement {
+    /// Unikalny identyfikator odznaki
+    pub id: i32,
+    /// Nazwa odznaki
+    pub name: String,
+    /// Opis odznaki
+    pub description: String,
+    /// Typ odznaki
+    pub achievement_type: AchievementType,
+    /// Wymagana wartość do zdobycia odznaki (np. 30 dla 30-day streak)
+    pub required_value: i32,
+    /// Ikona odznaki (emoji lub kod)
+    pub icon: String,
+    /// Status odznaki
+    pub status: AchievementStatus,
+    /// Timestamp zdobycia odznaki (tylko gdy status = Earned)
+    pub earned_at: Option<i64>,
+    /// Timestamp utworzenia odznaki
+    pub created_at: i64,
+    /// Timestamp ostatniej aktualizacji
+    pub updated_at: i64,
+}
+
+impl Achievement {
+    /// Tworzy nową odznakę
+    pub fn new(
+        name: String,
+        description: String,
+        achievement_type: AchievementType,
+        required_value: i32,
+        icon: String,
+    ) -> Self {
+        let now = chrono::Utc::now().timestamp();
+
+        Achievement {
+            id: 0, // Będzie ustawione przez bazę danych
+            name,
+            description,
+            achievement_type,
+            required_value,
+            icon,
+            status: AchievementStatus::Locked,
+            earned_at: None,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    /// Oznacza odznakę jako dostępną
+    pub fn make_available(&mut self) {
+        if matches!(self.status, AchievementStatus::Locked) {
+            self.status = AchievementStatus::Available;
+            self.updated_at = chrono::Utc::now().timestamp();
+        }
+    }
+
+    /// Oznacza odznakę jako zdobytą
+    pub fn mark_earned(&mut self) {
+        let now = chrono::Utc::now().timestamp();
+        self.status = AchievementStatus::Earned;
+        self.earned_at = Some(now);
+        self.updated_at = now;
+    }
+}
+
+/// Struktura reprezentująca dane do utworzenia nowego questu
+#[derive(Debug, Deserialize)]
+pub struct CreateQuestRequest {
+    pub title: String,
+    pub description: String,
+    pub quest_type: QuestType,
+    pub target_value: i32,
+    pub category: Option<String>,
+    pub habit_id: Option<i32>,
+    pub reward_exp: i64,
+    pub deadline: Option<i64>,
+}
+
+/// Struktura reprezentująca dane do aktualizacji questu
+#[derive(Debug, Deserialize)]
+pub struct UpdateQuestRequest {
+    pub current_progress: Option<i32>,
+    pub status: Option<QuestStatus>,
+}
+
+/// Struktura reprezentująca dane do utworzenia nowej odznaki
+#[derive(Debug, Deserialize)]
+pub struct CreateAchievementRequest {
+    pub name: String,
+    pub description: String,
+    pub achievement_type: AchievementType,
+    pub required_value: i32,
+    pub icon: String,
+}

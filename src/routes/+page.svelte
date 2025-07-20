@@ -7,6 +7,8 @@
   import HabitTracker from "$lib/components/HabitTracker.svelte";
   import CharacterStatus from "$lib/components/CharacterStatus.svelte";
   import CharacterAttributesChart from "$lib/components/CharacterAttributesChart.svelte";
+  import QuestTracker from "$lib/components/QuestTracker.svelte";
+  import AchievementGallery from "$lib/components/AchievementGallery.svelte";
   import ApiControls from "$lib/components/ApiControls.svelte";
   import { taskActions } from "$lib/stores/taskStore";
   import { habitActions } from "$lib/stores/habitStore";
@@ -14,6 +16,9 @@
 
   // Current view state
   let currentView: string = "dashboard";
+
+  // Quest tab state
+  let activeQuestTab: "quests" | "achievements" = "quests";
 
   // Navigation handler
   function handleNavigate(view: string) {
@@ -82,6 +87,14 @@
         >
           <span class="nav-icon">⚔️</span>
           Postać
+        </button>
+        <button
+          class="nav-btn"
+          class:active={currentView === "quests"}
+          on:click={() => handleNavigate("quests")}
+        >
+          <span class="nav-icon">🎯</span>
+          Questy
         </button>
         <button
           class="nav-btn"
@@ -175,6 +188,45 @@
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+    {:else if currentView === "quests"}
+      <section class="module-section">
+        <div class="module-header">
+          <h2 class="module-title">🎯 Questy i Odznaki</h2>
+          <p class="module-description">
+            Wyzwania tygodniowe i odznaki za osiągnięcia. Ukończ questy aby
+            zdobyć dodatkowe EXP i odblokować nowe odznaki!
+          </p>
+        </div>
+
+        <div class="module-content quests-content">
+          <div class="quests-tabs">
+            <button
+              class="quest-tab-btn"
+              class:active={activeQuestTab === "quests"}
+              on:click={() => (activeQuestTab = "quests")}
+            >
+              🎯 Questy Tygodniowe
+            </button>
+            <button
+              class="quest-tab-btn"
+              class:active={activeQuestTab === "achievements"}
+              on:click={() => (activeQuestTab = "achievements")}
+            >
+              🏆 Galeria Odznak
+            </button>
+          </div>
+
+          {#if activeQuestTab === "quests"}
+            <div class="quest-panel">
+              <QuestTracker />
+            </div>
+          {:else}
+            <div class="quest-panel">
+              <AchievementGallery />
+            </div>
+          {/if}
         </div>
       </section>
     {:else if currentView === "attributes"}

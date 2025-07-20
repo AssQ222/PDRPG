@@ -41,6 +41,9 @@ impl Database {
             M::up(include_str!("../../migrations/0001_create_tasks.sql")),
             M::up(include_str!("../../migrations/0002_create_habits.sql")),
             M::up(include_str!("../../migrations/0003_create_characters.sql")),
+            M::up(include_str!(
+                "../../migrations/0004_create_quests_and_achievements.sql"
+            )),
         ]);
 
         migrations.to_latest(&mut self.connection)?;

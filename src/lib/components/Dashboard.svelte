@@ -3,9 +3,11 @@
     import TaskSummaryWidget from "./TaskSummaryWidget.svelte";
     import HabitStreaksWidget from "./HabitStreaksWidget.svelte";
     import CharacterProgressWidget from "./CharacterProgressWidget.svelte";
+    import QuestSummaryWidget from "./QuestSummaryWidget.svelte";
     import { taskActions } from "$lib/stores/taskStore";
     import { habitActions } from "$lib/stores/habitStore";
     import { characterActions } from "$lib/stores/characterStore";
+    import { initializeQuestSystem } from "$lib/stores/questStore";
 
     // Props for navigation
     export let onNavigate: (view: string) => void = () => {};
@@ -16,6 +18,7 @@
             taskActions.loadTasks(),
             habitActions.initialize(),
             characterActions.initialize(),
+            initializeQuestSystem(),
         ]);
     });
 
@@ -29,6 +32,10 @@
 
     function handleNavigateToCharacter() {
         onNavigate("character");
+    }
+
+    function handleNavigateToQuests() {
+        onNavigate("quests");
     }
 </script>
 
@@ -85,6 +92,20 @@
                 </button>
             </div>
         </div>
+
+        <!-- Quest Summary Widget -->
+        <div class="widget-container">
+            <QuestSummaryWidget />
+            <div class="widget-footer">
+                <button
+                    class="widget-action-btn"
+                    on:click={handleNavigateToQuests}
+                >
+                    <span class="btn-icon">🎯</span>
+                    Zarządzaj questami
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="quick-actions">
@@ -116,6 +137,14 @@
                 <div class="action-text">
                     <div class="action-title">Zobacz postęp</div>
                     <div class="action-subtitle">Statystyki i osiągnięcia</div>
+                </div>
+            </button>
+
+            <button class="quick-action-card" on:click={handleNavigateToQuests}>
+                <div class="action-icon">🎯</div>
+                <div class="action-text">
+                    <div class="action-title">Questy tygodniowe</div>
+                    <div class="action-subtitle">Wyzwania i odznaki</div>
                 </div>
             </button>
         </div>
@@ -181,8 +210,21 @@
 
     .widgets-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 2rem;
+    }
+
+    /* Layout optimization for 4 widgets */
+    @media (min-width: 1200px) {
+        .widgets-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1600px) {
+        .widgets-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
 
     .widget-container {

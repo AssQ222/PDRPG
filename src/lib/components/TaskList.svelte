@@ -10,6 +10,7 @@
         characterActions,
         levelUpNotifications,
     } from "../stores/characterStore";
+    import { updateQuestProgress } from "../stores/questStore";
     import type { Task } from "../types/task";
 
     /**
@@ -42,6 +43,10 @@
             if (updatedTask?.completed) {
                 // Odśwież character store aby pobrać nowy EXP i poziom
                 await characterActions.getCharacter();
+
+                // Aktualizuj postęp questów po ukończeniu zadania
+                await updateQuestProgress();
+
                 console.log(
                     "🎮 Character refreshed after task completion:",
                     updatedTask.title,

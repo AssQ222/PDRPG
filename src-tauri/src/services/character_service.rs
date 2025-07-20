@@ -130,6 +130,14 @@ pub fn add_experience(connection: &Connection, exp_points: i64) -> Result<(Chara
         params![character.level, character.experience, character.updated_at],
     )?;
 
+    // Automatycznie aktualizuj progress questów po zdobyciu EXP
+    if let Err(e) = crate::services::quest_service::update_all_quest_progress(connection) {
+        eprintln!(
+            "Warning: Failed to update quest progress after EXP gain: {}",
+            e
+        );
+    }
+
     Ok((character, level_up))
 }
 
