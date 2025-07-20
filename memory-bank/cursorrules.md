@@ -1,0 +1,316 @@
+# Cursor Rules for PDRPG (Personal Development RPG)
+
+## ALWAYS RULES - MUST FOLLOW
+# IMPORTANT
+# Always read memory-bank@architecture.md before writing any code
+# Always read memory-bank@game-design-document.md before writing any code  
+# After adding a major feature, update memory-bank@architecture.md
+
+## Project Overview
+PDRPG is a desktop application for personal development that combines task management, goal tracking, and habit building with RPG gameification elements. Built with Tauri + Rust + Svelte + TypeScript.
+
+## Tech Stack
+- Framework Tauri (desktop app shell)
+- Backend Rust (core logic, data processing, API)
+- Frontend SvelteSvelteKit + TypeScript
+- Styling Tailwind CSS
+- Database SQLite
+- Charts Chart.js, D3.js, or ECharts
+- Build Tool Vite
+
+## Code Organization
+
+### File Structure Principle
+ALWAYS write many small, focused files instead of one large file.
+- Break down large components into smaller, reusable pieces
+- Each file should have a single responsibility
+- Keep files under 200 lines when possible
+- Use composition over inheritance
+- Create separate files for types, utilities, and business logic
+
+### Directory Structure
+```
+src
+├── lib
+│   ├── components          # Reusable Svelte components
+│   ├── stores             # Svelte stores for state management
+│   ├── types              # TypeScript type definitions
+│   ├── utils              # Utility functions
+│   └── api                # API client functions
+├── routes                 # SvelteKit routes
+├── app.html               # Main HTML template
+└── app.css                # Global styles
+src-tauri
+├── src
+│   ├── main.rs            # Main Rust entry point
+│   ├── lib.rs             # Core library functions
+│   ├── models            # Data models and structures
+│   ├── services          # Business logic services
+│   ├── api               # API endpoints and handlers
+│   └── database          # Database operations
+└── Cargo.toml            # Rust dependencies
+```
+
+## Coding Standards
+
+### Rust Backend
+- Use snake_case for variables, functions, and modules
+- Use PascalCase for types, traits, and enums
+- Follow Rust naming conventions strictly
+- Implement proper error handling with `ResultT, E`
+- Use asyncawait for IO operations
+- Document public APIs with `` comments
+- Use `clippy` for linting and `rustfmt` for formatting
+
+### Svelte Frontend
+- Use camelCase for variables and functions
+- Use PascalCase for component names
+- Use kebab-case for CSS classes and HTML attributes
+- Implement TypeScript for all components and functions
+- Use Svelte stores for global state management
+- Follow Svelte best practices for reactivity
+
+### TypeScript
+- Enable strict mode in `tsconfig.json`
+- Use explicit types for function parameters and return values
+- Prefer interfaces over types for object shapes
+- Use union types for discriminated unions
+- Implement proper error handling
+
+## Architecture Patterns
+
+### State Management
+- Use Svelte stores for global application state
+- Implement reactive stores for real-time updates
+- Use derived stores for computed values
+- Keep component state local when possible
+
+### Data Flow
+- Frontend components communicate with Rust backend via Tauri commands
+- Use typed interfaces for all API communications
+- Implement proper error boundaries and loading states
+- Cache frequently accessed data in stores
+
+### Database Design
+- Use SQLite for local data storage
+- Implement proper migrations for schema changes
+- Use prepared statements to prevent SQL injection
+- Implement connection pooling for performance
+
+## Component Guidelines
+
+### Svelte Components
+- ALWAYS create small, focused components with single responsibilities
+- Break down large components into smaller, reusable pieces
+- Each component should be in its own file
+- Use TypeScript interfaces for component props
+- Implement proper event handling and dispatching
+- Use Svelte actions for DOM manipulation
+- Follow the composition over inheritance principle
+- Keep components under 150 lines when possible
+
+### Rust Services
+- ALWAYS separate business logic into small, focused service modules
+- Each service should handle one specific domain
+- Break down large services into smaller, specialized functions
+- Use traits for dependency injection and testing
+- Implement proper error types for different failure modes
+- Use async functions for IO operations
+- Document complex algorithms and business rules
+- Keep service files under 200 lines when possible
+
+## Gameification Features
+
+### RPG Elements
+- Implement character classes (Warrior, Mage, Bard, Rogue)
+- Create experience point (EXP) system
+- Design quest system with weekly challenges
+- Implement achievementbadge system
+- Create avatar customization features
+
+### Data Models
+```rust
+ Character progression
+struct Character {
+    level u32,
+    experience u32,
+    class CharacterClass,
+    attributes Attributes,
+    achievements VecAchievement,
+}
+
+ Quest system
+struct Quest {
+    id String,
+    title String,
+    description String,
+    requirements QuestRequirements,
+    rewards QuestRewards,
+    deadline OptionDateTimeUtc,
+}
+```
+
+## API Design
+
+### Tauri Commands
+- Use descriptive command names
+- Implement proper error handling and validation
+- Use typed parameters and return values
+- Document all commands with examples
+
+### Local API for AI Integration
+- Expose REST endpoints for external AI tools
+- Implement authentication for API access
+- Use JSON for data serialization
+- Provide comprehensive API documentation
+
+## Testing Strategy
+
+### Rust Testing
+- Write unit tests for all business logic
+- Use integration tests for API endpoints
+- Mock external dependencies
+- Test error conditions and edge cases
+
+### Frontend Testing
+- Use Vitest for unit testing
+- Test component behavior and user interactions
+- Mock API calls and external dependencies
+- Test accessibility and responsive design
+
+## Performance Guidelines
+
+### Frontend Performance
+- Use Svelte's built-in optimizations
+- Implement lazy loading for routes and components
+- Optimize bundle size with tree shaking
+- Use proper image optimization
+
+### Backend Performance
+- Use async operations for IO
+- Implement proper database indexing
+- Cache frequently accessed data
+- Profile and optimize hot paths
+
+## Security Considerations
+
+### Data Protection
+- Implement end-to-end encryption for cloud sync
+- Use secure storage for sensitive data
+- Validate all user inputs
+- Implement proper authentication for API access
+
+### Code Security
+- Use prepared statements for database queries
+- Validate and sanitize all user inputs
+- Implement proper error handling without information leakage
+- Keep dependencies updated
+
+## Development Workflow
+
+### GitHub and Version Control
+- ALWAYS commit and push changes to GitHub regularly
+- Create feature branches for new development (`git checkout -b featurefeature-name`)
+- Push branches to GitHub immediately after creation
+- Commit changes at least once per day, even if work is incomplete
+- Use descriptive commit messages with conventional commits format
+- Create pull requests for code review before merging
+- Keep mainmaster branch always deployable
+- Use GitHub Issues for tracking tasks and bugs
+- Use GitHub Projects or Projects board for project management
+
+### Git Workflow
+- Use feature branches for new development
+- Write descriptive commit messages
+- Use conventional commits format
+- Review code before merging
+
+### Code Quality
+- ALWAYS run linters and formatters before committing to GitHub
+- Use pre-commit hooks for quality checks
+- Maintain consistent code style across the project
+- Document complex algorithms and business logic
+- ALWAYS test code before pushing to GitHub
+- Use GitHub Actions for CICD automation
+- Set up automated testing on pull requests
+
+## Documentation
+
+### Code Documentation
+- ALWAYS document all public APIs and functions
+- Use JSDoc for TypeScript functions
+- Use Rust doc comments for public items
+- Include usage examples in documentation
+- ALWAYS update README.md when adding new features
+- Keep documentation in sync with code changes
+- Use GitHub Wiki for detailed documentation
+
+### User Documentation
+- Create comprehensive user guides
+- Document all features and workflows
+- Include troubleshooting guides
+- Provide API documentation for developers
+
+## Deployment
+
+### Build Process
+- Use Tauri's build system for desktop distribution
+- Implement proper versioning and release notes
+- Test builds on target platforms
+- Optimize bundle size and performance
+
+### Distribution
+- Package for Windows, macOS, and Linux
+- Implement auto-update functionality
+- Provide clear installation instructions
+- Monitor crash reports and user feedback
+
+## Monitoring and Analytics
+
+### Error Tracking
+- Implement proper error logging
+- Track application crashes and errors
+- Monitor performance metrics
+- Collect user feedback and usage statistics
+
+### User Analytics
+- Track feature usage and engagement
+- Monitor user progression and retention
+- Analyze quest completion rates
+- Measure application performance
+
+## Accessibility
+
+### Standards Compliance
+- Follow WCAG 2.1 guidelines
+- Implement proper keyboard navigation
+- Use semantic HTML elements
+- Provide alternative text for images
+
+### User Experience
+- Design for users with disabilities
+- Implement high contrast themes
+- Support screen readers
+- Provide customizable font sizes
+
+## Internationalization
+
+### Localization
+- Use i18n for text localization
+- Support multiple languages
+- Implement proper date and number formatting
+- Consider cultural differences in UI design
+
+## Future Considerations
+
+### Scalability
+- Design for future feature additions
+- Plan for multi-user support
+- Consider cloud synchronization
+- Prepare for mobile platform expansion
+
+### Integration
+- Plan for third-party integrations
+- Design extensible plugin system
+- Consider API marketplace
+- Prepare for AI integration features 
