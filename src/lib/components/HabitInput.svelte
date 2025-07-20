@@ -52,7 +52,10 @@
 
 <div class="habit-input-container">
     <div class="glass-card p-6">
-        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <h3
+            class="text-xl font-bold text-white mb-4 flex items-center gap-2"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);"
+        >
             <span class="text-2xl">🎯</span>
             Add New Habit
         </h3>
@@ -152,8 +155,16 @@
 
         <!-- Help Text -->
         <div class="help-section mt-6 pt-4 border-t border-white/20">
-            <h4 class="text-sm font-semibold text-white/80 mb-2">💡 Tips:</h4>
-            <ul class="text-sm text-white/60 space-y-1">
+            <h4
+                class="text-sm font-semibold text-white mb-2"
+                style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
+            >
+                💡 Tips:
+            </h4>
+            <ul
+                class="text-sm text-white space-y-1"
+                style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);"
+            >
                 <li>
                     <strong>Yes/No habits:</strong> Perfect for daily practices like
                     meditation, exercise, journaling
@@ -178,7 +189,7 @@
     }
 
     .glass-card {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.85);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 16px;
@@ -217,7 +228,7 @@
     }
 
     .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .form-input:disabled,
@@ -228,7 +239,7 @@
 
     .form-help-text {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.85);
         margin-top: 0.25rem;
     }
 

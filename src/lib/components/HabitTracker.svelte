@@ -110,19 +110,26 @@
     <!-- Header with Stats -->
     <div class="glass-card p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <h2
+                class="text-2xl font-bold text-white flex items-center gap-2"
+                style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);"
+            >
                 <span class="text-3xl">📊</span>
                 Today's Habits
             </h2>
             <div class="flex items-center gap-2">
                 <button
                     on:click={() => habitActions.initialize()}
-                    class="text-xs text-white/60 hover:text-white/80 px-2 py-1 rounded"
+                    class="text-xs text-white/90 hover:text-white px-2 py-1 rounded"
+                    style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
                     title="Reload habits"
                 >
                     🔄
                 </button>
-                <div class="text-sm text-white/70">
+                <div
+                    class="text-sm text-white/90"
+                    style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
+                >
                     {formatDateShort()}
                 </div>
             </div>
@@ -132,21 +139,25 @@
         {#if stats.total > 0}
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-value">{stats.total}</div>
+                    <div class="stat-value stat-total">{stats.total}</div>
                     <div class="stat-label">Total Habits</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">{stats.with_streak}</div>
+                    <div class="stat-value stat-active">
+                        {stats.with_streak}
+                    </div>
                     <div class="stat-label">Active Streaks</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">
+                    <div class="stat-value stat-average">
                         {stats.average_streak.toFixed(1)}
                     </div>
                     <div class="stat-label">Avg Streak</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">{stats.longest_streak}</div>
+                    <div class="stat-value stat-best">
+                        {stats.longest_streak}
+                    </div>
                     <div class="stat-label">Best Streak</div>
                 </div>
             </div>
@@ -175,7 +186,7 @@
         <div class="glass-card p-8">
             <div class="loading-container">
                 <div class="loading-spinner large"></div>
-                <p class="text-white/70 mt-4">Loading your habits...</p>
+                <p class="text-white/90 mt-4">Loading your habits...</p>
             </div>
         </div>
     {/if}
@@ -188,7 +199,7 @@
                 <h3 class="text-xl font-bold text-white mb-2">
                     No habits yet!
                 </h3>
-                <p class="text-white/70 text-center max-w-md">
+                <p class="text-white/90 text-center max-w-md">
                     Start building better habits by adding your first one above.
                     Small daily actions lead to big transformations.
                 </p>
@@ -329,7 +340,7 @@
     }
 
     .glass-card {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.85);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 16px;
@@ -352,12 +363,28 @@
     .stat-value {
         font-size: 1.5rem;
         font-weight: bold;
-        color: #a855f7;
+        color: white;
+    }
+
+    .stat-total {
+        color: #60a5fa; /* blue */
+    }
+
+    .stat-active {
+        color: #34d399; /* green */
+    }
+
+    .stat-average {
+        color: #fbbf24; /* yellow */
+    }
+
+    .stat-best {
+        color: #f87171; /* red */
     }
 
     .stat-label {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.9);
         margin-top: 0.25rem;
     }
 
@@ -551,7 +578,7 @@
     }
 
     .counter-target {
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.85);
         font-size: 1rem;
     }
 
@@ -593,7 +620,7 @@
         top: 0.75rem;
         right: 0.75rem;
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.9);
         background: rgba(255, 255, 255, 0.1);
         padding: 0.25rem 0.5rem;
         border-radius: 8px;
