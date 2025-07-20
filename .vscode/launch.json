@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Tauri Development",
+      "cargo": {
+        "args": [
+          "build",
+          "--manifest-path=./src-tauri/Cargo.toml",
+          "--no-default-features"
+        ],
+        "filter": {
+          "name": "pdrpg",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "RUST_LOG",
+          "value": "info"
+        }
+      ],
+      "console": "integratedTerminal",
+      "sourceLanguages": ["rust"],
+      "preLaunchTask": "ui:dev"
+    },
+    {
+      "type": "lldb",
+      "request": "launch", 
+      "name": "Debug Tauri Backend Only",
+      "cargo": {
+        "args": [
+          "build",
+          "--manifest-path=./src-tauri/Cargo.toml",
+          "--no-default-features"
+        ],
+        "filter": {
+          "name": "pdrpg",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}/src-tauri",
+      "environment": [
+        {
+          "name": "RUST_LOG",
+          "value": "debug"
+        }
+      ],
+      "console": "integratedTerminal",
+      "sourceLanguages": ["rust"]
+    }
+  ]
+} 

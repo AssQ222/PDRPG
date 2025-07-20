@@ -1,3 +1,83 @@
 {
-  "svelte.enable-ts-plugin": true
+  "svelte.enable-ts-plugin": true,
+  "rust-analyzer.linkedProjects": [
+    "./src-tauri/Cargo.toml"
+  ],
+  "rust-analyzer.cargo.target": "x86_64-pc-windows-msvc",
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.checkOnSave.extraArgs": ["--", "-W", "clippy::all"],
+  "rust-analyzer.procMacro.enable": true,
+  "rust-analyzer.diagnostics.experimental.enable": true,
+  "rust-analyzer.hover.actions.enable": true,
+  "rust-analyzer.inlayHints.enable": true,
+  "rust-analyzer.inlayHints.chainingHints.enable": true,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+  
+  "files.associations": {
+    "*.rs": "rust",
+    "Cargo.toml": "toml",
+    "Cargo.lock": "toml"
+  },
+  
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.svelte-kit": true,
+    "**/dist": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.svelte-kit": true,
+    "**/dist": true,
+    "**/pnpm-lock.yaml": true,
+    "**/Cargo.lock": true
+  },
+  
+  "typescript.preferences.importModuleSpecifier": "relative",
+  
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "env": {
+        "RUST_LOG": "info"
+      }
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  
+  "emmet.includeLanguages": {
+    "svelte": "html"
+  },
+  
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.rust-analyzer": "explicit"
+    }
+  },
+  
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode",
+    "editor.formatOnSave": true
+  },
+  
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  }
 }
