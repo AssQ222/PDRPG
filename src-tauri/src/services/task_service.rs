@@ -11,6 +11,16 @@ use rusqlite::Connection;
 /// # Returns
 /// * `Result<Task>` - Nowo utworzone zadanie lub błąd
 pub fn add_task(conn: &Connection, request: CreateTaskRequest) -> Result<Task> {
+    // Validate title length
+    if request.title.trim().is_empty() {
+        return Err(anyhow::anyhow!("Task title cannot be empty"));
+    }
+    if request.title.len() > 100 {
+        return Err(anyhow::anyhow!(
+            "Task title is too long (max 100 characters)"
+        ));
+    }
+
     let mut task = Task::new(request.title);
 
     let sql =

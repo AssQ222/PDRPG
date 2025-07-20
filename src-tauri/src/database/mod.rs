@@ -10,17 +10,17 @@ pub struct Database {
 
 impl Database {
     /// Inicjalizuje nowe połączenie z bazą danych SQLite
-    /// 
+    ///
     /// # Arguments
     /// * `db_path` - Ścieżka do pliku bazy danych
-    /// 
+    ///
     /// # Returns
     /// * `Result<Database>` - Nowa instancja Database lub błąd
     pub fn new(db_path: PathBuf) -> Result<Self> {
         let connection = Connection::open_with_flags(
             &db_path,
-            OpenFlags::SQLITE_OPEN_READ_WRITE 
-                | OpenFlags::SQLITE_OPEN_CREATE 
+            OpenFlags::SQLITE_OPEN_READ_WRITE
+                | OpenFlags::SQLITE_OPEN_CREATE
                 | OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )?;
 
@@ -28,10 +28,10 @@ impl Database {
         connection.execute("PRAGMA foreign_keys = ON;", [])?;
 
         let mut db = Database { connection };
-        
+
         // Uruchomienie migracji
         db.run_migrations()?;
-        
+
         Ok(db)
     }
 
@@ -39,10 +39,11 @@ impl Database {
     fn run_migrations(&mut self) -> Result<()> {
         let migrations = Migrations::new(vec![
             M::up(include_str!("../../migrations/0001_create_tasks.sql")),
+            M::up(include_str!("../../migrations/0002_create_habits.sql")),
         ]);
 
         migrations.to_latest(&mut self.connection)?;
-        
+
         Ok(())
     }
 
@@ -56,12 +57,12 @@ impl Database {
 pub fn initialize_database() -> Result<Database> {
     let mut db_path = get_app_data_dir()?;
     db_path.push("pdrpg.db");
-    
+
     // Upewnij się, że katalog istnieje
     if let Some(parent) = db_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    
+
     Database::new(db_path)
 }
 
@@ -81,6 +82,6 @@ fn get_app_data_dir() -> Result<PathBuf> {
             .map(|home| home.join(".local").join("share"))
             .unwrap_or_else(|| PathBuf::from("."))
     };
-    
+
     Ok(app_data_dir.join("pdrpg"))
-} 
+}

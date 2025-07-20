@@ -4,8 +4,11 @@ mod models;
 mod services;
 
 use database::Database;
-use models::{CreateTaskRequest, Task};
-use services::task_service;
+use models::{
+    CreateHabitEntryRequest, CreateHabitRequest, CreateTaskRequest, Habit, HabitEntry, Task,
+    UpdateHabitRequest,
+};
+use services::{habit_service, task_service};
 use std::sync::Mutex;
 use tauri::State;
 
@@ -66,6 +69,109 @@ fn delete_task(task_id: i32, state: State<AppState>) -> Result<(), String> {
     task_service::delete_task(conn, task_id).map_err(|e| format!("Failed to delete task: {}", e))
 }
 
+// ==== HABIT COMMANDS ====
+
+/// Tauri command do dodawania nowego nawyku
+#[tauri::command]
+fn add_habit(request: CreateHabitRequest, state: State<AppState>) -> Result<Habit, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::add_habit(conn, request).map_err(|e| format!("Failed to add habit: {}", e))
+}
+
+/// Tauri command do pobierania wszystkich nawyków
+#[tauri::command]
+fn get_all_habits(state: State<AppState>) -> Result<Vec<Habit>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::get_all_habits(conn).map_err(|e| format!("Failed to get habits: {}", e))
+}
+
+/// Tauri command do usuwania nawyku
+#[tauri::command]
+fn delete_habit(id: i32, state: State<AppState>) -> Result<(), String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::delete_habit(conn, id).map_err(|e| format!("Failed to delete habit: {}", e))
+}
+
+/// Tauri command do aktualizacji nawyku
+#[tauri::command]
+fn update_habit(
+    habit_id: i32,
+    request: UpdateHabitRequest,
+    state: State<AppState>,
+) -> Result<Habit, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::update_habit(conn, habit_id, request)
+        .map_err(|e| format!("Failed to update habit: {}", e))
+}
+
+/// Tauri command do dodawania wpisu nawyku
+#[tauri::command]
+fn add_habit_entry(
+    request: CreateHabitEntryRequest,
+    state: State<AppState>,
+) -> Result<HabitEntry, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::add_habit_entry(conn, request)
+        .map_err(|e| format!("Failed to add habit entry: {}", e))
+}
+
+/// Tauri command do pobierania wpisów nawyków na konkretny dzień
+#[tauri::command]
+fn get_habit_entries_for_date(
+    date: String,
+    state: State<AppState>,
+) -> Result<Vec<HabitEntry>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::get_habit_entries_for_date(conn, &date)
+        .map_err(|e| format!("Failed to get habit entries for date: {}", e))
+}
+
+/// Tauri command do pobierania wszystkich wpisów dla konkretnego nawyku
+#[tauri::command]
+fn get_habit_entries_for_habit(
+    habit_id: i32,
+    state: State<AppState>,
+) -> Result<Vec<HabitEntry>, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    habit_service::get_habit_entries_for_habit(conn, habit_id)
+        .map_err(|e| format!("Failed to get habit entries: {}", e))
+}
+
 /// Stan aplikacji zawierający połączenie z bazą danych
 struct AppState {
     db: Mutex<Database>,
@@ -89,7 +195,14 @@ pub fn run() {
             add_task,
             get_all_tasks,
             toggle_task_status,
-            delete_task
+            delete_task,
+            add_habit,
+            get_all_habits,
+            delete_habit,
+            update_habit,
+            add_habit_entry,
+            get_habit_entries_for_date,
+            get_habit_entries_for_habit
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -54,6 +54,7 @@
             disabled={$isLoading}
             class="task-input"
             type="text"
+            maxlength="100"
             aria-label="Nowe zadanie"
         />
         <button

@@ -2,6 +2,8 @@
   import { onMount } from "svelte";
   import TaskInput from "$lib/components/TaskInput.svelte";
   import TaskList from "$lib/components/TaskList.svelte";
+  import HabitInput from "$lib/components/HabitInput.svelte";
+  import HabitTracker from "$lib/components/HabitTracker.svelte";
   import { taskActions } from "$lib/stores/taskStore";
 
   /**
@@ -27,21 +29,45 @@
       PDRPG
     </h1>
     <p class="app-subtitle">Personal Development RPG</p>
-    <div class="module-header">
-      <h2 class="module-title">📝 Tablica Zadań</h2>
-      <p class="module-description">
-        Zarządzaj swoimi zadaniami w stylu Inbox Zero. Dodawaj, ukończaj i
-        organizuj swoje cele.
+    <div class="app-description">
+      <p class="description-text">
+        Rozwijaj się jak w grze RPG! Zarządzaj zadaniami, buduj nawyki i śledź
+        swój postęp.
       </p>
     </div>
   </header>
 
   <section class="tasks-section">
+    <div class="section-header">
+      <h2 class="section-title">📝 Tablica Zadań</h2>
+      <p class="section-description">
+        Zarządzaj swoimi zadaniami w stylu Inbox Zero. Dodawaj, ukończaj i
+        organizuj swoje cele.
+      </p>
+    </div>
+
     <!-- Komponent do dodawania zadań -->
     <TaskInput />
 
     <!-- Lista zadań -->
     <TaskList />
+  </section>
+
+  <section class="habits-section">
+    <div class="section-header">
+      <h2 class="section-title">🎯 Habit Tracker</h2>
+      <p class="section-description">
+        Buduj lepsze nawyki dzień po dniu. Śledź postępy i rozwijaj streak!
+      </p>
+    </div>
+
+    <!-- Formularz dodawania nawyków -->
+    <div class="habit-input-wrapper">
+      <HabitInput />
+    </div>
+
+    <!-- Tracker nawyków -->
+    <HabitTracker />
   </section>
 
   <footer class="app-footer">
@@ -74,7 +100,7 @@
   }
 
   .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
     min-height: 100vh;
@@ -119,12 +145,23 @@
     font-weight: 500;
   }
 
-  .module-header {
+  .app-description {
     border-top: 1px solid #e2e8f0;
     padding-top: 2rem;
   }
 
-  .module-title {
+  .description-text {
+    margin: 0;
+    color: #64748b;
+    font-size: 1rem;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .section-title {
     margin: 0 0 0.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
@@ -135,20 +172,30 @@
     gap: 0.5rem;
   }
 
-  .module-description {
+  .section-description {
     margin: 0;
     color: #64748b;
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
-  .tasks-section {
-    flex: 1;
+  .tasks-section,
+  .habits-section {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 2rem;
     border-radius: 1rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2rem;
+  }
+
+  .habits-section {
+    background: transparent;
+  }
+
+  .habit-input-wrapper {
+    display: flex;
+    justify-content: center;
     margin-bottom: 2rem;
   }
 
@@ -194,14 +241,19 @@
       font-size: 1rem;
     }
 
-    .module-title {
+    .section-title {
       font-size: 1.25rem;
       flex-direction: column;
       gap: 0.25rem;
     }
 
-    .tasks-section {
+    .tasks-section,
+    .habits-section {
       padding: 1.5rem;
+    }
+
+    .habit-input-wrapper {
+      margin-bottom: 1.5rem;
     }
 
     .app-footer {
@@ -226,6 +278,10 @@
       border: 1px solid rgba(71, 85, 105, 0.3);
     }
 
+    .habits-section {
+      background: transparent;
+    }
+
     .app-title {
       background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
       -webkit-background-clip: text;
@@ -233,12 +289,13 @@
       background-clip: text;
     }
 
-    .module-title {
+    .section-title {
       color: #f1f5f9;
     }
 
     .app-subtitle,
-    .module-description,
+    .description-text,
+    .section-description,
     .footer-text {
       color: #94a3b8;
     }
