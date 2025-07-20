@@ -1,4 +1,5 @@
 // Moduły aplikacji
+mod api;
 mod database;
 mod models;
 mod services;
@@ -9,7 +10,7 @@ use models::{
     CreateTaskRequest, Habit, HabitEntry, Task, UpdateCharacterRequest, UpdateHabitRequest,
 };
 use services::{character_service, habit_service, task_service};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tauri::State;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -248,9 +249,49 @@ fn add_attribute_points(
         .map_err(|e| format!("Failed to add attribute points: {}", e))
 }
 
+/// Tauri command do uruchamiania API server
+#[tauri::command]
+async fn start_api_server(port: u16) -> Result<String, String> {
+    // Utwórz osobną instancję bazy danych dla API
+    let api_db = database::initialize_database()
+        .map_err(|e| format!("Failed to initialize API database: {}", e))?;
+    let db_arc = Arc::new(Mutex::new(api_db));
+
+    // Uruchom API server w osobnym tokio task
+    tokio::spawn(async move {
+        match api::start_api_server(db_arc, port).await {
+            Ok(server_handle) => {
+                println!("✅ API Server started on port {}", port);
+                if let Err(e) = server_handle.await {
+                    eprintln!("❌ API Server task failed: {}", e);
+                }
+            }
+            Err(e) => {
+                eprintln!("❌ Failed to start API server: {}", e);
+            }
+        }
+    });
+
+    Ok(format!(
+        "API Server starting on port {}. Check console for status.",
+        port
+    ))
+}
+
+/// Tauri command do sprawdzania statusu API server
+#[tauri::command]
+async fn check_api_status(port: u16) -> Result<bool, String> {
+    // Sprawdź czy port jest zajęty
+    match tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await {
+        Ok(_) => Ok(false), // Port wolny - API server nie działa
+        Err(_) => Ok(true), // Port zajęty - prawdopodobnie API server działa
+    }
+}
+
 /// Stan aplikacji zawierający połączenie z bazą danych
 struct AppState {
     db: Mutex<Database>,
+    api_server_handle: Option<tokio::task::JoinHandle<()>>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -260,8 +301,11 @@ pub fn run() {
 
     println!("Database initialized successfully");
 
-    // Tworzenie stanu aplikacji
-    let app_state = AppState { db: Mutex::new(db) };
+    // Tworzenie stanu aplikacji (API server zostanie uruchomiony na żądanie)
+    let app_state = AppState {
+        db: Mutex::new(db),
+        api_server_handle: None,
+    };
 
     tauri::Builder::default()
         .manage(app_state)
@@ -283,7 +327,9 @@ pub fn run() {
             create_character,
             update_character,
             add_experience,
-            add_attribute_points
+            add_attribute_points,
+            start_api_server,
+            check_api_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

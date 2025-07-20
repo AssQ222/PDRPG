@@ -6,6 +6,7 @@
   import HabitInput from "$lib/components/HabitInput.svelte";
   import HabitTracker from "$lib/components/HabitTracker.svelte";
   import CharacterStatus from "$lib/components/CharacterStatus.svelte";
+  import ApiControls from "$lib/components/ApiControls.svelte";
   import { taskActions } from "$lib/stores/taskStore";
   import { habitActions } from "$lib/stores/habitStore";
   import { characterActions } from "$lib/stores/characterStore";
@@ -80,6 +81,14 @@
         >
           <span class="nav-icon">⚔️</span>
           Postać
+        </button>
+        <button
+          class="nav-btn"
+          class:active={currentView === "api"}
+          on:click={() => handleNavigate("api")}
+        >
+          <span class="nav-icon">🌐</span>
+          API
         </button>
       </nav>
     </div>
@@ -157,6 +166,20 @@
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+    {:else if currentView === "api"}
+      <section class="module-section">
+        <div class="module-header">
+          <h2 class="module-title">🌐 API Server</h2>
+          <p class="module-description">
+            Uruchom lokalny HTTP API server umożliwiający zewnętrznym narzędziom
+            (np. skryptom AI) dostęp do danych aplikacji.
+          </p>
+        </div>
+
+        <div class="module-content">
+          <ApiControls />
         </div>
       </section>
     {/if}
