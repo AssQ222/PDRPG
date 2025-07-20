@@ -1,156 +1,246 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
+  import { onMount } from "svelte";
+  import TaskInput from "$lib/components/TaskInput.svelte";
+  import TaskList from "$lib/components/TaskList.svelte";
+  import { taskActions } from "$lib/stores/taskStore";
 
-  let name = $state("");
-  let greetMsg = $state("");
-
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
-  }
+  /**
+   * Ładuje zadania przy inicjalizacji komponentu
+   */
+  onMount(async () => {
+    await taskActions.loadTasks();
+  });
 </script>
 
+<svelte:head>
+  <title>PDRPG - Personal Development RPG</title>
+  <meta
+    name="description"
+    content="Personal Development RPG - aplikacja do samorozwoju z elementami gry"
+  />
+</svelte:head>
+
 <main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
+  <header class="app-header">
+    <h1 class="app-title">
+      <span class="title-icon">⚔️</span>
+      PDRPG
+    </h1>
+    <p class="app-subtitle">Personal Development RPG</p>
+    <div class="module-header">
+      <h2 class="module-title">📝 Tablica Zadań</h2>
+      <p class="module-description">
+        Zarządzaj swoimi zadaniami w stylu Inbox Zero. Dodawaj, ukończaj i
+        organizuj swoje cele.
+      </p>
+    </div>
+  </header>
 
-  <div class="row">
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank">
-      <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank">
-      <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />
-    </a>
-  </div>
-  <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
+  <section class="tasks-section">
+    <!-- Komponent do dodawania zadań -->
+    <TaskInput />
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
-  </form>
-  <p>{greetMsg}</p>
+    <!-- Lista zadań -->
+    <TaskList />
+  </section>
+
+  <footer class="app-footer">
+    <p class="footer-text">
+      🎮 Rozwijaj się jak w grze RPG! Każde ukończone zadanie to doświadczenie w
+      Twojej podróży samorozwoju.
+    </p>
+  </footer>
 </main>
 
 <style>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.svelte-kit:hover {
-  filter: drop-shadow(0 0 2em #ff3e00);
-}
-
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+  :global(body) {
+    margin: 0;
+    padding: 0;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Roboto",
+      "Oxygen",
+      "Ubuntu",
+      "Cantarell",
+      sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #1f2937;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
   }
 
-  a:hover {
-    color: #24c8db;
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+  .app-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
 
+  .app-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .title-icon {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  .app-subtitle {
+    margin: 0 0 2rem 0;
+    font-size: 1.125rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .module-header {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 2rem;
+  }
+
+  .module-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .module-description {
+    margin: 0;
+    color: #64748b;
+    font-size: 1rem;
+  }
+
+  .tasks-section {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2rem;
+  }
+
+  .app-footer {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .footer-text {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  /* Responsive design */
+  @media (max-width: 640px) {
+    .container {
+      padding: 1rem 0.75rem;
+    }
+
+    .app-header {
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .app-title {
+      font-size: 2.25rem;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .title-icon {
+      font-size: 2rem;
+    }
+
+    .app-subtitle {
+      font-size: 1rem;
+    }
+
+    .module-title {
+      font-size: 1.25rem;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .tasks-section {
+      padding: 1.5rem;
+    }
+
+    .app-footer {
+      padding: 1rem;
+    }
+
+    .footer-text {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :global(body) {
+      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+    }
+
+    .app-header,
+    .tasks-section,
+    .app-footer {
+      background-color: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+    }
+
+    .app-title {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .module-title {
+      color: #f1f5f9;
+    }
+
+    .app-subtitle,
+    .module-description,
+    .footer-text {
+      color: #94a3b8;
+    }
+  }
 </style>
