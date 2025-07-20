@@ -1,4 +1,5 @@
-use crate::models::{CreateTaskRequest, Task};
+use crate::models::{Character, CreateTaskRequest, Task};
+use crate::services::character_service;
 use anyhow::Result;
 use rusqlite::Connection;
 
@@ -94,12 +95,36 @@ pub fn toggle_task_status(conn: &Connection, task_id: i32) -> Result<Task> {
         })
     })?;
 
+    let was_completed = task.completed;
+
     // Przełącz status
     task.toggle_completed();
 
     // Zaktualizuj w bazie danych
     let update_sql = "UPDATE tasks SET completed = ?1, updated_at = ?2 WHERE id = ?3";
     conn.execute(update_sql, (task.completed, task.updated_at, task.id))?;
+
+    // Jeśli zadanie zostało ukończone (przeszło z false na true), dodaj EXP
+    if !was_completed && task.completed {
+        // TODO: W przyszłości można dodać logikę wykrywania czy zadanie jest powiązane z celem
+        let is_goal_related = false;
+
+        // Przetwórz ukończenie zadania i dodaj EXP
+        match character_service::process_task_completion(conn, &task.title, is_goal_related) {
+            Ok((_, level_up)) => {
+                if level_up {
+                    println!(
+                        "Level up! Task '{}' caused character to level up!",
+                        task.title
+                    );
+                }
+            }
+            Err(e) => {
+                // Loguj błąd ale nie przerywaj operacji - zadanie zostało już zaktualizowane
+                eprintln!("Failed to process task completion for EXP: {}", e);
+            }
+        }
+    }
 
     Ok(task)
 }

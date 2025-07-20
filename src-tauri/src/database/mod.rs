@@ -40,6 +40,7 @@ impl Database {
         let migrations = Migrations::new(vec![
             M::up(include_str!("../../migrations/0001_create_tasks.sql")),
             M::up(include_str!("../../migrations/0002_create_habits.sql")),
+            M::up(include_str!("../../migrations/0003_create_characters.sql")),
         ]);
 
         migrations.to_latest(&mut self.connection)?;

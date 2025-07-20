@@ -5,10 +5,10 @@ mod services;
 
 use database::Database;
 use models::{
-    CreateHabitEntryRequest, CreateHabitRequest, CreateTaskRequest, Habit, HabitEntry, Task,
-    UpdateHabitRequest,
+    Character, CreateCharacterRequest, CreateHabitEntryRequest, CreateHabitRequest,
+    CreateTaskRequest, Habit, HabitEntry, Task, UpdateCharacterRequest, UpdateHabitRequest,
 };
-use services::{habit_service, task_service};
+use services::{character_service, habit_service, task_service};
 use std::sync::Mutex;
 use tauri::State;
 
@@ -172,6 +172,82 @@ fn get_habit_entries_for_habit(
         .map_err(|e| format!("Failed to get habit entries: {}", e))
 }
 
+// ==== CHARACTER COMMANDS ====
+
+/// Tauri command do pobierania postaci gracza
+#[tauri::command]
+fn get_character(state: State<AppState>) -> Result<Character, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    character_service::get_character(conn).map_err(|e| format!("Failed to get character: {}", e))
+}
+
+/// Tauri command do tworzenia nowej postaci
+#[tauri::command]
+fn create_character(
+    request: CreateCharacterRequest,
+    state: State<AppState>,
+) -> Result<Character, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    character_service::create_character(conn, request)
+        .map_err(|e| format!("Failed to create character: {}", e))
+}
+
+/// Tauri command do aktualizacji postaci
+#[tauri::command]
+fn update_character(
+    request: UpdateCharacterRequest,
+    state: State<AppState>,
+) -> Result<Character, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    character_service::update_character(conn, request)
+        .map_err(|e| format!("Failed to update character: {}", e))
+}
+
+/// Tauri command do dodawania punktów doświadczenia
+#[tauri::command]
+fn add_experience(exp_points: i64, state: State<AppState>) -> Result<(Character, bool), String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    character_service::add_experience(conn, exp_points)
+        .map_err(|e| format!("Failed to add experience: {}", e))
+}
+
+/// Tauri command do dodawania punktów atrybutu
+#[tauri::command]
+fn add_attribute_points(
+    attribute: String,
+    points: i32,
+    state: State<AppState>,
+) -> Result<Character, String> {
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| format!("Database lock error: {}", e))?;
+    let conn = db.connection();
+
+    character_service::add_attribute_points(conn, &attribute, points)
+        .map_err(|e| format!("Failed to add attribute points: {}", e))
+}
+
 /// Stan aplikacji zawierający połączenie z bazą danych
 struct AppState {
     db: Mutex<Database>,
@@ -202,7 +278,12 @@ pub fn run() {
             update_habit,
             add_habit_entry,
             get_habit_entries_for_date,
-            get_habit_entries_for_habit
+            get_habit_entries_for_habit,
+            get_character,
+            create_character,
+            update_character,
+            add_experience,
+            add_attribute_points
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

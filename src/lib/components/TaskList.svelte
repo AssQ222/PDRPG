@@ -6,6 +6,10 @@
         taskActions,
         taskStats,
     } from "../stores/taskStore";
+    import {
+        characterActions,
+        levelUpNotifications,
+    } from "../stores/characterStore";
     import type { Task } from "../types/task";
 
     /**
@@ -25,7 +29,25 @@
      * Obsługuje przełączenie statusu zadania
      */
     async function handleToggleTask(taskId: number) {
+        // Znajdź zadanie przed toggle
+        const task = $tasks.find((t) => t.id === taskId);
+        const wasCompleted = task?.completed || false;
+
+        // Toggle zadania
         await taskActions.toggleTaskStatus(taskId);
+
+        // Jeśli zadanie zostało ukończone (przeszło z false na true), odśwież character
+        if (!wasCompleted && task) {
+            const updatedTask = $tasks.find((t) => t.id === taskId);
+            if (updatedTask?.completed) {
+                // Odśwież character store aby pobrać nowy EXP i poziom
+                await characterActions.getCharacter();
+                console.log(
+                    "🎮 Character refreshed after task completion:",
+                    updatedTask.title,
+                );
+            }
+        }
     }
 
     /**

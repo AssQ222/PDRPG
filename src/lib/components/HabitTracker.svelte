@@ -7,6 +7,7 @@
         habitError,
         isLoading,
     } from "../stores/habitStore";
+    import { characterActions } from "../stores/characterStore";
     import type { HabitWithEntry } from "../types/habit";
 
     // Reactive state
@@ -29,8 +30,19 @@
 
     // Event handlers
     async function handleBooleanHabit(habitWithEntry: HabitWithEntry) {
-        const newStatus = !habitWithEntry.completed_today;
+        const wasCompleted = habitWithEntry.completed_today;
+        const newStatus = !wasCompleted;
+
         await habitActions.markHabitToday(habitWithEntry.habit.id, newStatus);
+
+        // Jeśli nawyk został oznaczony jako wykonany, odśwież character store
+        if (!wasCompleted && newStatus) {
+            await characterActions.getCharacter();
+            console.log(
+                "🎮 Character refreshed after habit completion:",
+                habitWithEntry.habit.title,
+            );
+        }
     }
 
     async function handleCounterChange(
@@ -40,11 +52,31 @@
         if (newValue < 0) newValue = 0;
         if (newValue > 999) newValue = 999; // reasonable limit
 
+        const oldValue = habitWithEntry.today_value;
+
         await habitActions.markHabitToday(
             habitWithEntry.habit.id,
             undefined,
             newValue,
         );
+
+        // Sprawdź czy nawyk został ukończony (osiągnięta wartość docelowa)
+        const targetValue = habitWithEntry.habit.target_value;
+        const wasCompleted = targetValue
+            ? oldValue >= targetValue
+            : oldValue > 0;
+        const isNowCompleted = targetValue
+            ? newValue >= targetValue
+            : newValue > 0;
+
+        // Jeśli nawyk przeszedł z nieukończonego na ukończony, odśwież character
+        if (!wasCompleted && isNowCompleted) {
+            await characterActions.getCharacter();
+            console.log(
+                "🎮 Character refreshed after habit completion:",
+                habitWithEntry.habit.title,
+            );
+        }
     }
 
     async function deleteHabit(habitId: number, habitTitle: string) {

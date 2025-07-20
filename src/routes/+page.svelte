@@ -4,6 +4,7 @@
   import TaskList from "$lib/components/TaskList.svelte";
   import HabitInput from "$lib/components/HabitInput.svelte";
   import HabitTracker from "$lib/components/HabitTracker.svelte";
+  import CharacterStatus from "$lib/components/CharacterStatus.svelte";
   import { taskActions } from "$lib/stores/taskStore";
 
   /**
@@ -36,6 +37,20 @@
       </p>
     </div>
   </header>
+
+  <!-- Character Status Dashboard -->
+  <section class="character-section">
+    <div class="section-header">
+      <h2 class="section-title">🏆 Status Postaci</h2>
+      <p class="section-description">
+        Twój postęp w systemie RPG. Rozwijaj się i zdobywaj doświadczenie!
+      </p>
+    </div>
+
+    <div class="character-status-wrapper">
+      <CharacterStatus />
+    </div>
+  </section>
 
   <section class="tasks-section">
     <div class="section-header">
@@ -178,6 +193,7 @@
     font-size: 0.95rem;
   }
 
+  .character-section,
   .tasks-section,
   .habits-section {
     background-color: rgba(255, 255, 255, 0.95);
@@ -187,6 +203,16 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     margin-bottom: 2rem;
+  }
+
+  .character-section {
+    background: transparent;
+  }
+
+  .character-status-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
   }
 
   .habits-section {
@@ -247,6 +273,7 @@
       gap: 0.25rem;
     }
 
+    .character-section,
     .tasks-section,
     .habits-section {
       padding: 1.5rem;
@@ -278,6 +305,7 @@
       border: 1px solid rgba(71, 85, 105, 0.3);
     }
 
+    .character-section,
     .habits-section {
       background: transparent;
     }

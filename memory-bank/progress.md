@@ -294,20 +294,174 @@ struct HabitEntry {
 
 ---
 
-## 📋 Następny krok: Krok 5 - Implementacja Rdzenia Grywalizacji (EXP i Poziomy)
+## ✅ Krok 5: Implementacja Rdzenia Grywalizacji (EXP i Poziomy) (UKOŃCZONY)
+**Data wykonania:** 21.01.2025  
+**Status:** ✅ ZAKOŃCZONY POMYŚLNIE
+
+### Wykonane działania:
+
+#### 1. **Backend (Rust) - Model Character i System EXP:**
+- **Rozszerzono modele:** Dodano `Character`, `CharacterClass`, `CharacterAttributes` w `src-tauri/src/models/mod.rs`
+- **Migracja:** Utworzono `0003_create_characters.sql` z tabelą `characters` i domyślną postacią
+- **Service:** Zaimplementowano `src-tauri/src/services/character_service.rs` z pełnym CRUD:
+  - `get_character()`, `create_character()`, `update_character()`
+  - `add_experience()`, `add_attribute_points()` 
+  - `process_task_completion()`, `process_habit_completion()`
+  - Zaawansowany system obliczania EXP i atrybutów na podstawie słów kluczowych
+- **Tauri Commands:** Zarejestrowano 5 nowych poleceń w `src-tauri/src/lib.rs`
+
+#### 2. **System EXP i Poziomów:**
+- **Formuła poziomu:** `level = floor(sqrt(experience / 100)) + 1`
+- **EXP za zadania:** 15 EXP (podstawowe), 25 EXP (powiązane z celami) + bonus atrybutu
+- **EXP za nawyki:** 10 EXP + bonus za streak (do 50%) + bonus atrybutu
+- **Inteligentne rozpoznawanie kategorii:** automatyczne przypisywanie atrybutów na podstawie tytułów
+- **6 atrybutów RPG:** Siła, Intelekt, Charyzma, Zręczność, Mądrość, Kondycja
+
+#### 3. **Integracja z istniejącymi modułami:**
+- **Task Service:** Modyfikacja `toggle_task_status()` - automatyczne dodawanie EXP przy ukończeniu
+- **Habit Service:** Modyfikacja `add_habit_entry()` - EXP z bonusem za streak
+- **Wykrywanie categorii zadań/nawyków:** sport→siła, nauka→intelekt, prezentacja→charyzma, etc.
+
+#### 4. **Frontend (Svelte) - Reactive Character System:**
+- **TypeScript Types:** `src/lib/types/character.ts` z kompletnymi interfejsami, enumami i funkcjami pomocniczymi
+- **Reactive Store:** `src/lib/stores/characterStore.ts` z:
+  - `characterActions` - pełne zarządzanie postacią przez Tauri commands
+  - Derived stores: `character`, `characterStats`, `experienceInfo`, `attributeInfo`
+  - `levelUpNotifications` - system notyfikacji o awansach
+  - Auto-initialization i error handling
+
+#### 5. **Komponent CharacterStatus.svelte:**
+- **Glass Morphism UI:** Spójny z resztą aplikacji design
+- **Progress Bar EXP:** Animowany pasek postępu do następnego poziomu
+- **Mini Dashboard:** Poziom, EXP, wszystkie 6 atrybutów w siatce
+- **Responsive Design:** Dostosowanie do mobile i desktop
+- **Level Up Notifications:** Toast notifications z animacjami
+- **Debug Controls:** Przycisk testowy w trybie deweloperskim
+
+#### 6. **Integracja w Aplikacji:**
+- **Główna strona:** Dodano sekcję "🏆 Status Postaci" między headerem a zadaniami
+- **Responsive CSS:** Pełne wsparcie dla mobile/desktop w dark/light mode
+- **Auto-loading:** Automatyczne ładowanie postaci przy starcie aplikacji
+
+### Architektura systemów RPG:
+
+#### Modele danych:
+```rust
+// Character - główny model postaci
+struct Character {
+    id: i32,                          // Zawsze 1 (jedna postać)
+    level: i32,                       // Poziom postaci
+    experience: i64,                  // Punkty doświadczenia
+    character_class: CharacterClass,  // Wojownik, Mag, Bard, Łotrzyk
+    attributes: CharacterAttributes,  // 6 atrybutów RPG
+    created_at: i64,
+    updated_at: i64,
+}
+
+// 6 atrybutów postaci
+struct CharacterAttributes {
+    strength: i32,      // Sport, trening, zdrowie
+    intelligence: i32,  // Nauka, książki, kursy
+    charisma: i32,      // Prezentacje, kontakty
+    dexterity: i32,     // Hobby, praktyczne umiejętności
+    wisdom: i32,        // Medytacja, refleksja
+    constitution: i32,  // Sen, dieta, nawyki zdrowotne
+}
+```
+
+#### System EXP:
+- **Zadania:** 15 EXP (podstawowe) / 25 EXP (powiązane z celami)
+- **Nawyki:** 10 EXP + bonus za streak (0-50% dodatkowego EXP)
+- **Inteligentne kategorie:** słowa kluczowe automatycznie przypisują atrybuty
+- **Level progression:** progresywna formuła - wyższe poziomy wymagają więcej EXP
+
+#### Funkcjonalności zaimplementowane:
+- ✅ Tworzenie i zarządzanie postacią (domyślnie Wojownik)
+- ✅ Automatyczne dodawanie EXP za ukończenie zadań/nawyków
+- ✅ 4 klasy postaci z różnymi specjalizacjami
+- ✅ 6 atrybutów RPG z automatycznym przypisywaniem
+- ✅ System poziomów z progresywną skalą trudności
+- ✅ Level up notifications z animacjami
+- ✅ Persystencja w SQLite (migracja automatyczna)
+- ✅ Responsive UI z glass morphism design
+- ✅ Real-time updates i reactive state management
+- ✅ Debug controls dla testowania w development
+
+### Testy weryfikujące - ZALICZONE ✅:
+
+#### Test E2E (Kroku 5) - PRZESZEDŁ POMYŚLNIE ✅:
+**Instrukcje testu:**
+1. **Uruchom aplikację:** `pnpm tauri dev`
+2. **Sprawdź CharacterStatus:** Sekcja "🏆 Status Postaci" wyświetla poziom 1, EXP 0
+3. **Test zadania:**
+   - Dodaj zadanie "Trening na siłowni" 
+   - Ukończ zadanie (kliknij checkbox)
+   - **Oczekiwany wynik:** Pasek EXP się zapełnił, EXP wzrósł o 15, atrybut Siła +1
+4. **Test nawyku:**
+   - Dodaj nawyk Boolean "Codzienna medytacja"
+   - Oznacz jako wykonany na dzisiaj
+   - **Oczekiwany wynik:** EXP wzrósł o 10, atrybut Mądrość +1
+5. **Test persystencji:**
+   - Zamknij aplikację całkowicie
+   - Uruchom ponownie `pnpm tauri dev`
+   - **Oczekiwany wynik:** Stan postaci zachowany (poziom, EXP, atrybuty)
+6. **Test level up:**
+   - Użyj przycisku "🧪 Dodaj 50 EXP (test)" w trybie dev
+   - **Oczekiwany wynik:** Notyfikacja "Level Up!" gdy osiągniesz poziom 2
+
+### Funkcje zaawansowane:
+- **Inteligentne rozpoznawanie:** "sport" → Siła, "nauka" → Intelekt, "medytacja" → Mądrość
+- **Streak bonus:** Nawyki z długimi streakmi dają więcej EXP (do 50% bonusu)
+- **Progress calculation:** Dokładne obliczenia postępu do następnego poziomu
+- **Character classes:** 4 klasy z różnymi specjalizacjami i ikonami
+- **Notification system:** Auto-expiring toast notifications dla level up
+
+### Uwagi techniczne:
+- **Type Safety:** Pełna typesafety między Rust a TypeScript/Svelte
+- **Performance:** Efficient derived stores, minimal re-renders
+- **Error Handling:** Graceful handling na wszystkich poziomach aplikacji
+- **Responsive Design:** Mobile-first approach z glass morphism
+- **Accessibility:** ARIA labels, semantic HTML, keyboard navigation
+
+### Finalne testy i zakończenie (21.01.2025) - ZALICZONE ✅:
+
+#### Problemy znalezione i naprawione podczas testów:
+- 🐛 **Level up notifications nie działają:** Frontend nie był informowany o level up
+  - **Rozwiązanie:** Dodano automatyczne odświeżanie `characterStore` po ukończeniu zadań/nawyków
+  - **Rozwiązanie:** Dodano wykrywanie level up w `getCharacter()` i `addExperience()`
+- 🐛 **Przycisk testowy EXP zmieniał stronę:** Funkcja nie była `async`
+  - **Rozwiązanie:** Przepisano na `async/await` z proper error handling
+- 🐛 **Brak przycisku reset postaci:** Requested by user
+  - **Rozwiązanie:** Dodano przycisk "🔄 Reset postaci" z confirmation dialog
+
+#### Kompleksowe testy końcowe - WSZYSTKIE ZALICZONE ✅:
+- ✅ **Test EXP za zadania:** 15 EXP + atrybut według kategorii (sport→siła, nauka→intelekt)
+- ✅ **Test EXP za nawyki:** 10 EXP + bonus streak + atrybut według kategorii  
+- ✅ **Test level up notifications:** Toast notifications pojawiają się przy awansie poziomu
+- ✅ **Test wyboru klasy postaci:** Można zmieniać między Warrior/Mage/Bard/Rogue
+- ✅ **Test persystencji:** Wszystkie dane zachowane po restarcie aplikacji
+- ✅ **Test integracji:** Frontend automatic refresh po zmianach EXP
+- ✅ **Test reset postaci:** Przywraca poziom 1, EXP 0, Warrior, atrybuty domyślne
+
+#### Użytkownik potwierdził: **"wszystko działa"** ✅
+
+#### Cleanup po testach:
+- ❌ **Usunięto przycisk testowy:** "🧪 Dodaj 50 EXP (test)" - nie potrzebny w production
+- ✅ **Zostawiono przycisk reset:** "🔄 Reset postaci" - przydatny dla użytkownika
+
+**Krok 5 oficjalnie UKOŃCZONY - wszystkie funkcjonalności działają poprawnie!**
+
+---
+
+## 📋 Następny krok: Krok 6 - Implementacja Dashboardu
 **Status:** 🔄 GOTOWY DO IMPLEMENTACJI
 
-**Cel:** Wprowadzenie podstawowych mechanik RPG powiązanych z istniejącymi modułami zadań i nawyków.
+**Cel:** Stworzenie głównego ekranu podsumowującego informacje ze wszystkich sekcji.
 
 **Planowane działania:**
-1. **Backend (Rust):** Model `Character` z EXP/poziomami, `character_service.rs`, integracja z task/habit services
-2. **Frontend (Svelte):** `characterStore.ts`, komponent `CharacterStatus.svelte` z awatarem, poziomem i progress bar EXP
-3. **Gameifikacja:** System punktów za ukończenie zadań/nawyków, poziomy postaci, unlockable content
-4. **Test E2E:** Ukończenie zadania/nawyku zwiększa EXP, osiągnięcie poziomu, restart zachowuje stan
+1. **Dashboard Component:** Nowa strona/komponent `Dashboard.svelte`
+2. **Agregacja danych:** Subskrybowanie ze wszystkich store'ów (task, habit, character)  
+3. **Widżety:** Podsumowanie zadań na dziś, streaki nawyków, statystyki postaci
+4. **Navigation:** Routing między modułami i dashboardem
 
-**Przewidywany czas:** 2-3 godziny implementacji + 1 godzina testów
-
-**Architektura:**
-- Character model z atrybutami (level, exp, class, attributes)
-- EXP rewards za różne akcje (zadania: 10-50 EXP, nawyki: 5-20 EXP, streaks: bonus)
-- Level progression z wymaganiami EXP i odblokowanymi funkcjami
+**Przewidywany czas:** 1-2 godziny implementacji + 30 minut testów

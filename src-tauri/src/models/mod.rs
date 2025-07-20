@@ -221,3 +221,158 @@ pub struct CreateHabitEntryRequest {
     pub completed: Option<bool>,
     pub value: Option<i32>,
 }
+
+/// Klasy postaci reprezentujące różne obszary rozwoju
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum CharacterClass {
+    /// Wojownik - rozwój fizyczny, sport, zdrowie
+    Warrior,
+    /// Mag - rozwój intelektualny, nauka, umiejętności
+    Mage,
+    /// Bard - kreatywność, umiejętności społeczne, komunikacja
+    Bard,
+    /// Łotrzyk - finanse, przedsiębiorczość, praktyczne umiejętności
+    Rogue,
+}
+
+/// Atrybuty postaci dla wykresu pajęczynowego
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CharacterAttributes {
+    /// Siła fizyczna (sport, trening, zdrowie)
+    pub strength: i32,
+    /// Intelekt (nauka, czytanie, kursy)
+    pub intelligence: i32,
+    /// Charyzma (kontakty społeczne, prezentacje)
+    pub charisma: i32,
+    /// Zręczność (praktyczne umiejętności, hobby)
+    pub dexterity: i32,
+    /// Mądrość (medytacja, refleksja, mindfulness)
+    pub wisdom: i32,
+    /// Konstytucja (sen, dieta, nawyki zdrowotne)
+    pub constitution: i32,
+}
+
+impl CharacterAttributes {
+    /// Tworzy nowe atrybuty z wartościami startowymi
+    pub fn new() -> Self {
+        CharacterAttributes {
+            strength: 10,
+            intelligence: 10,
+            charisma: 10,
+            dexterity: 10,
+            wisdom: 10,
+            constitution: 10,
+        }
+    }
+
+    /// Dodaje punkty do określonego atrybutu
+    pub fn add_points(&mut self, attribute: &str, points: i32) {
+        match attribute {
+            "strength" => self.strength += points,
+            "intelligence" => self.intelligence += points,
+            "charisma" => self.charisma += points,
+            "dexterity" => self.dexterity += points,
+            "wisdom" => self.wisdom += points,
+            "constitution" => self.constitution += points,
+            _ => {}
+        }
+    }
+}
+
+/// Model reprezentujący postać gracza w systemie RPG
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Character {
+    /// Unikalny identyfikator postaci (zawsze 1 - jedna postać na użytkownika)
+    pub id: i32,
+    /// Aktualny poziom postaci
+    pub level: i32,
+    /// Aktualny experience points
+    pub experience: i64,
+    /// Klasa postaci
+    pub character_class: CharacterClass,
+    /// Atrybuty postaci
+    pub attributes: CharacterAttributes,
+    /// Timestamp utworzenia postaci
+    pub created_at: i64,
+    /// Timestamp ostatniej modyfikacji
+    pub updated_at: i64,
+}
+
+impl Character {
+    /// Tworzy nową postać z domyślnymi wartościami
+    pub fn new(character_class: CharacterClass) -> Self {
+        let now = chrono::Utc::now().timestamp();
+
+        Character {
+            id: 1, // Zawsze jedna postać na użytkownika
+            level: 1,
+            experience: 0,
+            character_class,
+            attributes: CharacterAttributes::new(),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    /// Dodaje punkty doświadczenia i sprawdza awanse poziomów
+    ///
+    /// # Arguments
+    /// * `exp_points` - Ilość punktów doświadczenia do dodania
+    ///
+    /// # Returns
+    /// * `bool` - True jeśli nastąpił awans poziomu
+    pub fn add_experience(&mut self, exp_points: i64) -> bool {
+        self.experience += exp_points;
+        self.updated_at = chrono::Utc::now().timestamp();
+
+        let old_level = self.level;
+        self.level = self.calculate_level();
+
+        old_level < self.level
+    }
+
+    /// Oblicza poziom na podstawie aktualnego doświadczenia
+    /// Formuła: level = floor(sqrt(experience / 100)) + 1
+    pub fn calculate_level(&self) -> i32 {
+        ((self.experience as f64 / 100.0).sqrt().floor() as i32) + 1
+    }
+
+    /// Oblicza doświadczenie wymagane do następnego poziomu
+    pub fn experience_to_next_level(&self) -> i64 {
+        let next_level = self.level + 1;
+        let required_exp = ((next_level - 1) * (next_level - 1) * 100) as i64;
+        required_exp - self.experience
+    }
+
+    /// Oblicza postęp do następnego poziomu w procentach (0.0 - 1.0)
+    pub fn level_progress(&self) -> f64 {
+        let current_level_exp = ((self.level - 1) * (self.level - 1) * 100) as i64;
+        let next_level_exp = (self.level * self.level * 100) as i64;
+        let progress_exp = self.experience - current_level_exp;
+        let total_exp_needed = next_level_exp - current_level_exp;
+
+        if total_exp_needed > 0 {
+            progress_exp as f64 / total_exp_needed as f64
+        } else {
+            0.0
+        }
+    }
+
+    /// Dodaje punkty do atrybutu
+    pub fn add_attribute_points(&mut self, attribute: &str, points: i32) {
+        self.attributes.add_points(attribute, points);
+        self.updated_at = chrono::Utc::now().timestamp();
+    }
+}
+
+/// Struktura reprezentująca dane do utworzenia nowej postaci
+#[derive(Debug, Deserialize)]
+pub struct CreateCharacterRequest {
+    pub character_class: CharacterClass,
+}
+
+/// Struktura reprezentująca dane do aktualizacji postaci
+#[derive(Debug, Deserialize)]
+pub struct UpdateCharacterRequest {
+    pub character_class: Option<CharacterClass>,
+}

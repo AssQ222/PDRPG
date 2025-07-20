@@ -1,6 +1,7 @@
 use crate::models::{
     CreateHabitEntryRequest, CreateHabitRequest, Habit, HabitEntry, HabitType, UpdateHabitRequest,
 };
+use crate::services::character_service;
 use anyhow::Result;
 use rusqlite::Connection;
 
@@ -222,6 +223,37 @@ pub fn add_habit_entry(conn: &Connection, request: CreateHabitEntryRequest) -> R
     // Przelicz streak dla nawyku
     let new_streak = calculate_streak(conn, request.habit_id)?;
     update_habit_streak(conn, request.habit_id, new_streak)?;
+
+    // Sprawdź czy wpis oznacza ukończenie nawyku na dzisiaj i dodaj EXP
+    let habit = get_habit_by_id(conn, request.habit_id)?;
+    let is_completed = match habit.habit_type {
+        HabitType::Boolean => entry.completed,
+        HabitType::Counter => {
+            if let Some(target) = habit.target_value {
+                entry.value >= target
+            } else {
+                entry.value > 0
+            }
+        }
+    };
+
+    if is_completed {
+        // Przetwórz ukończenie nawyku i dodaj EXP
+        match character_service::process_habit_completion(conn, &habit.title, new_streak) {
+            Ok((_, level_up)) => {
+                if level_up {
+                    println!(
+                        "Level up! Habit '{}' caused character to level up!",
+                        habit.title
+                    );
+                }
+            }
+            Err(e) => {
+                // Loguj błąd ale nie przerywaj operacji - wpis został już dodany
+                eprintln!("Failed to process habit completion for EXP: {}", e);
+            }
+        }
+    }
 
     Ok(entry)
 }
