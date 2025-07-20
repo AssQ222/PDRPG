@@ -549,7 +549,7 @@
     }
 
     .counter-container {
-        space: 1rem;
+        gap: 1rem;
     }
 
     .counter-display {

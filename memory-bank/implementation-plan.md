@@ -134,8 +134,8 @@
 
 ---
 
-### Krok 7: Implementacja Lokalnego API dla AI
-**Cel:** Umożliwienie komunikacji z aplikacją zewnętrznym narzędziom, zgodnie z wymaganiami technicznymi i propozycją stacku.
+### Krok 7: Implementacja Lokalnego API lub innego API jak openAI dla AI
+**Cel:** Umożliwienie komunikacji z aplikacją zewnętrznym narzędziom, zgodnie z wymaganiami technicznymi i propozycją stacku. ma to być opcja do włącznenia nie taka która musi być zawsze włączona. Użytkownik ma mieć możliwość wyboru czy chce pomoc z API czy nie.
 
 * **Zadanie:**
     1.  **Backend (Rust):**

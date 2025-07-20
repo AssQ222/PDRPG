@@ -1,4 +1,4 @@
-use crate::models::{Character, CreateTaskRequest, Task};
+use crate::models::{CreateTaskRequest, Task};
 use crate::services::character_service;
 use anyhow::Result;
 use rusqlite::Connection;
@@ -156,6 +156,7 @@ pub fn delete_task(conn: &Connection, task_id: i32) -> Result<()> {
 ///
 /// # Returns
 /// * `Result<Task>` - Zadanie lub błąd
+#[cfg(test)]
 pub fn get_task_by_id(conn: &Connection, task_id: i32) -> Result<Task> {
     let sql = "SELECT id, title, completed, created_at, updated_at FROM tasks WHERE id = ?1";
     let mut stmt = conn.prepare(sql)?;

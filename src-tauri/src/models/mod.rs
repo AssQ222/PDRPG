@@ -36,12 +36,14 @@ impl Task {
     }
 
     /// Oznacza zadanie jako ukończone
+    #[allow(dead_code)]
     pub fn mark_completed(&mut self) {
         self.completed = true;
         self.updated_at = chrono::Utc::now().timestamp();
     }
 
     /// Oznacza zadanie jako nieukończone
+    #[allow(dead_code)]
     pub fn mark_incomplete(&mut self) {
         self.completed = false;
         self.updated_at = chrono::Utc::now().timestamp();
@@ -57,6 +59,7 @@ impl Task {
     ///
     /// # Arguments
     /// * `new_title` - Nowy tytuł zadania
+    #[allow(dead_code)]
     pub fn update_title(&mut self, new_title: String) {
         self.title = new_title;
         self.updated_at = chrono::Utc::now().timestamp();
@@ -72,7 +75,9 @@ pub struct CreateTaskRequest {
 /// Struktura reprezentująca dane do aktualizacji zadania
 #[derive(Debug, Deserialize)]
 pub struct UpdateTaskRequest {
+    #[allow(dead_code)]
     pub title: Option<String>,
+    #[allow(dead_code)]
     pub completed: Option<bool>,
 }
 
@@ -150,6 +155,7 @@ impl Habit {
     ///
     /// # Arguments
     /// * `new_streak` - Nowy streak
+    #[allow(dead_code)]
     pub fn update_streak(&mut self, new_streak: i32) {
         self.current_streak = new_streak;
         self.updated_at = chrono::Utc::now().timestamp();
@@ -338,6 +344,7 @@ impl Character {
     }
 
     /// Oblicza doświadczenie wymagane do następnego poziomu
+    #[allow(dead_code)]
     pub fn experience_to_next_level(&self) -> i64 {
         let next_level = self.level + 1;
         let required_exp = ((next_level - 1) * (next_level - 1) * 100) as i64;
@@ -345,6 +352,7 @@ impl Character {
     }
 
     /// Oblicza postęp do następnego poziomu w procentach (0.0 - 1.0)
+    #[allow(dead_code)]
     pub fn level_progress(&self) -> f64 {
         let current_level_exp = ((self.level - 1) * (self.level - 1) * 100) as i64;
         let next_level_exp = (self.level * self.level * 100) as i64;
