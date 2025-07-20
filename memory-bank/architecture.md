@@ -40,6 +40,7 @@ src-tauri/
 │   ├── database/         # Operacje bazodanowe
 │   ├── main.rs           # Entry point
 │   └── lib.rs            # Biblioteka główna
+├── migrations/           # Migracje SQL
 └── Cargo.toml           # Zależności Rust
 ```
 
@@ -79,12 +80,117 @@ name = "pdrpg_lib"       # było: "__name_lib"
 - **Bundler:** Vite 6.3.5
 - **Package manager:** pnpm 10.13.1
 
-#### Status:
-- ✅ Projekt zainicjowany
-- ✅ Struktura katalogów utworzona
-- ✅ Aplikacja uruchamia się poprawnie
-- ✅ Git repository skonfigurowane
-- 🔄 Gotowe do implementacji bazy danych (Krok 2)
+---
+
+### Krok 2: Konfiguracja Bazy Danych i Pierwsze Modele (20.07.2025)
+
+#### Zależności Rust (Cargo.toml):
+```toml
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+rusqlite_migration = "1.2"
+anyhow = "1.0"
+tokio = { version = "1", features = ["full"] }
+dirs = "5.0"
+chrono = { version = "0.4", features = ["serde"] }
+```
+
+#### Architektura bazy danych:
+- **Engine:** SQLite (embedded, bundled z rusqlite)
+- **Lokalizacja:** `%APPDATA%\pdrpg\pdrpg.db` (Windows)
+- **Migracje:** Automatyczne z `rusqlite_migration`
+- **Connection pooling:** Single connection z Mutex dla thread-safety
+
+#### Struktura Database Layer:
+```rust
+// src-tauri/src/database/mod.rs
+pub struct Database {
+    connection: Connection,
+}
+
+impl Database {
+    pub fn new(db_path: PathBuf) -> Result<Self>
+    fn run_migrations(&mut self) -> Result<()>
+    pub fn connection(&self) -> &Connection
+}
+
+pub fn initialize_database() -> Result<Database>
+```
+
+#### Model Task:
+```rust
+// src-tauri/src/models/mod.rs
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Task {
+    pub id: i32,
+    pub title: String,
+    pub completed: bool,
+    pub created_at: i64,    // Unix timestamp
+    pub updated_at: i64,    // Unix timestamp
+}
+```
+
+#### Pierwsza migracja (0001_create_tasks.sql):
+```sql
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    title TEXT NOT NULL,
+    completed BOOLEAN NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Performance indexes
+CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at);
+```
+
+#### Application State:
+```rust
+// src-tauri/src/lib.rs
+struct AppState {
+    db: Mutex<Database>,
+}
+
+pub fn run() {
+    let db = database::initialize_database()
+        .expect("Failed to initialize database");
+    
+    let app_state = AppState {
+        db: Mutex::new(db),
+    };
+
+    tauri::Builder::default()
+        .manage(app_state)
+        // ...
+}
+```
+
+#### Rozwiązane problemy techniczne:
+
+**1. Błędna ścieżka do migracji:**
+- **Problem:** `include_str!("../../../migrations/...")` 
+- **Rozwiązanie:** `include_str!("../../migrations/...")`
+
+**2. Mutable reference dla migracji:**
+- **Problem:** `migrations.to_latest(&self.connection)` wymagał `&mut`
+- **Rozwiązanie:** Zmiana `fn run_migrations(&self)` na `fn run_migrations(&mut self)`
+
+**3. Cargo nie w PATH:**
+- **Problem:** Windows PowerShell nie miał dostępu do `cargo`
+- **Rozwiązanie:** `$env:PATH += ";$env:USERPROFILE\.cargo\bin"`
+
+#### Status bazy danych:
+- ✅ **Plik:** `%APPDATA%\pdrpg\pdrpg.db` (24KB)
+- ✅ **Tabela:** `tasks` z indeksami
+- ✅ **Migracje:** Automatyczne przy starcie
+- ✅ **Connection:** Thread-safe z Mutex
+- ✅ **Kompilacja:** Bez błędów (tylko warnings o nieużywanych funkcjach)
 
 ---
 
@@ -93,12 +199,26 @@ name = "pdrpg_lib"       # było: "__name_lib"
 ### Zasady projektowania:
 1. **Małe, skoncentrowane pliki** - każdy plik ma jedną odpowiedzialność
 2. **Separacja warstw** - wyraźne rozdzielenie Frontend/Backend
-3. **Type safety** - TypeScript w całym projekcie
-4. **Reactive state management** - Svelte stores
+3. **Type safety** - TypeScript w całym projekcie + Rust
+4. **Reactive state management** - Svelte stores (TODO: Krok 3)
 5. **Database-first approach** - SQLite jako single source of truth
 
+### Wzorce implementacji:
+- **Database:** Connection pooling z Mutex dla thread-safety
+- **Models:** Rich domain models z metodami biznesowymi
+- **Migrations:** Automatyczne, wersjonowane z rusqlite_migration
+- **Error handling:** Result<T, E> pattern z anyhow
+- **Serialization:** Pełna obsługa Serde dla wszystkich struktur
+
 ### Następne kroki architektoniczne:
-- [ ] Konfiguracja SQLite i migracji
-- [ ] Zdefiniowanie pierwszych modeli danych
-- [ ] Implementacja Tauri commands
-- [ ] Konfiguracja komunikacji Frontend-Backend
+- [ ] **Krok 3:** Tauri Commands dla CRUD operations
+- [ ] **Krok 3:** Svelte stores dla reaktywnego stanu
+- [ ] **Krok 3:** Frontend components (TaskInput, TaskList)
+- [ ] **Krok 4:** Habit model i drugi moduł
+- [ ] **Krok 5:** Character model i system EXP
+
+### Performance considerations:
+- SQLite bundled - brak zewnętrznych zależności
+- Indeksy na często używanych kolumnach
+- Connection reuse z Mutex
+- Lazy loading dla UI (planowane w Krok 3)
