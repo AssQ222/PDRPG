@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { invoke } from '@tauri-apps/api/core';
 import type { Task, CreateTaskRequest, TaskLoadingState, TaskError } from '../types/task';
+import { characterActions } from './characterStore';
 
 /**
  * Stan store'a dla zadań
@@ -94,18 +95,22 @@ export const taskActions = {
 	},
 
 	/**
-	 * Przełącza status ukończenia zadania
-	 */
+ * Przełącza status ukończenia zadania
+ */
 	async toggleTaskStatus(taskId: number): Promise<void> {
 		try {
 			const updatedTask: Task = await invoke('toggle_task_status', { taskId });
 			taskStore.update(state => ({
 				...state,
-				tasks: state.tasks.map(task => 
+				tasks: state.tasks.map(task =>
 					task.id === taskId ? updatedTask : task
 				),
 				error: null
 			}));
+
+			// Odśwież character store po ukończeniu zadania (może dodać EXP i atrybuty)
+			await characterActions.getCharacter();
+			console.log('✅ Character data refreshed after task completion');
 		} catch (error) {
 			console.error('Failed to toggle task status:', error);
 			taskStore.update(state => ({
@@ -159,12 +164,12 @@ export const isLoading = derived(taskStore, $store => $store.loading === 'loadin
 export const taskError = derived(taskStore, $store => $store.error);
 
 /** Store dla ukończonych zadań */
-export const completedTasks = derived(taskStore, $store => 
+export const completedTasks = derived(taskStore, $store =>
 	$store.tasks.filter(task => task.completed)
 );
 
 /** Store dla nieukończonych zadań */
-export const pendingTasks = derived(taskStore, $store => 
+export const pendingTasks = derived(taskStore, $store =>
 	$store.tasks.filter(task => !task.completed)
 );
 

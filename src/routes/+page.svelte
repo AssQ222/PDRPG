@@ -6,6 +6,7 @@
   import HabitInput from "$lib/components/HabitInput.svelte";
   import HabitTracker from "$lib/components/HabitTracker.svelte";
   import CharacterStatus from "$lib/components/CharacterStatus.svelte";
+  import CharacterAttributesChart from "$lib/components/CharacterAttributesChart.svelte";
   import ApiControls from "$lib/components/ApiControls.svelte";
   import { taskActions } from "$lib/stores/taskStore";
   import { habitActions } from "$lib/stores/habitStore";
@@ -81,6 +82,14 @@
         >
           <span class="nav-icon">⚔️</span>
           Postać
+        </button>
+        <button
+          class="nav-btn"
+          class:active={currentView === "attributes"}
+          on:click={() => handleNavigate("attributes")}
+        >
+          <span class="nav-icon">🕷️</span>
+          Atrybuty
         </button>
         <button
           class="nav-btn"
@@ -166,6 +175,20 @@
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+    {:else if currentView === "attributes"}
+      <section class="module-section">
+        <div class="module-header">
+          <h2 class="module-title">🕷️ Wykres Atrybutów</h2>
+          <p class="module-description">
+            Wizualizacja rozwoju wszystkich atrybutów postaci w formie wykresu
+            pajęczynowego. Śledź swoje postępy i identyfikuj obszary do rozwoju.
+          </p>
+        </div>
+
+        <div class="module-content">
+          <CharacterAttributesChart />
         </div>
       </section>
     {:else if currentView === "api"}

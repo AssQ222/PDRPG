@@ -12,6 +12,7 @@ import type {
 	HabitStats,
 	DateString
 } from '../types/habit';
+import { characterActions } from './characterStore';
 
 /**
  * Stan store'a dla nawyków
@@ -231,6 +232,10 @@ export const habitActions = {
 					error: null
 				};
 			});
+
+			// Odśwież character store po wykonaniu nawyku (może dodać EXP i atrybuty)
+			await characterActions.getCharacter();
+			console.log('✅ Character data refreshed after habit completion');
 		} catch (error) {
 			console.error('Failed to mark habit today:', error);
 			habitStore.update(state => ({
