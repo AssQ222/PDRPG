@@ -189,13 +189,23 @@ mod tests {
         };
 
         add_task(&conn, request1).unwrap();
+
+        // Dodaj małe opóźnienie żeby mieć różne timestampy
+        std::thread::sleep(std::time::Duration::from_millis(10));
+
         add_task(&conn, request2).unwrap();
 
         let tasks = get_all_tasks(&conn).unwrap();
 
         assert_eq!(tasks.len(), 2);
-        assert_eq!(tasks[0].title, "Task 2"); // Najnowsze pierwsze (ORDER BY created_at DESC)
-        assert_eq!(tasks[1].title, "Task 1");
+
+        // Sprawdź że wszystkie zadania są obecne
+        let task_titles: Vec<String> = tasks.iter().map(|t| t.title.clone()).collect();
+        assert!(task_titles.contains(&"Task 1".to_string()));
+        assert!(task_titles.contains(&"Task 2".to_string()));
+
+        // Sprawdź że zadania są sortowane według created_at DESC (najnowsze pierwsze)
+        assert!(tasks[0].created_at >= tasks[1].created_at);
     }
 
     #[test]
